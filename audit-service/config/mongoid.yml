@@ -1,0 +1,29 @@
+development:
+  clients:
+    default:
+      database: factumarket_audit_development
+      hosts:
+        - <%= ENV.fetch("MONGODB_HOST") { "localhost" } %>:<%= ENV.fetch("MONGODB_PORT") { "27017" } %>
+      options:
+        server_selection_timeout: 5
+
+test:
+  clients:
+    default:
+      database: factumarket_audit_test
+      hosts:
+        - <%= ENV.fetch("MONGODB_HOST") { "localhost" } %>:<%= ENV.fetch("MONGODB_PORT") { "27017" } %>
+      options:
+        server_selection_timeout: 5
+
+production:
+  clients:
+    default:
+      database: factumarket_audit_production
+      hosts:
+        - <%= ENV.fetch("MONGODB_HOST") %>:<%= ENV.fetch("MONGODB_PORT") { "27017" } %>
+      options:
+        server_selection_timeout: 5
+        # Optional: username and password for production (uncomment if needed)
+        # user: MONGODB_USERNAME_HERE
+        # password: MONGODB_PASSWORD_HERE
