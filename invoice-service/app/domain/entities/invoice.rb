@@ -11,7 +11,7 @@ module Domain
         @id = attributes[:id]
         @customer_id = attributes[:customer_id]
         @amount = attributes[:amount]
-        @emission_date = attributes.key?(:emission_date) ? attributes[:emission_date] : Date.today
+        @emission_date = attributes.key?(:emission_date) ? parse_date(attributes[:emission_date]) : Date.today
         @status = attributes[:status] || 'pending'
         @created_at = attributes[:created_at]
         @updated_at = attributes[:updated_at]
@@ -70,6 +70,16 @@ module Domain
           created_at: created_at,
           updated_at: updated_at
         }
+      end
+
+      private
+
+      def parse_date(date_value)
+        return nil if date_value.nil?
+        return date_value if date_value.is_a?(Date)
+
+        # Parse string to Date
+        Date.parse(date_value.to_s) rescue nil
       end
     end
   end

@@ -276,16 +276,14 @@ rails runner 'EventConsumer.start'
 
 ### Autenticación
 
-Todos los endpoints están protegidos con JWT. Para obtener un token (simplificado para la demo):
+Todos los endpoints están protegidos con JWT. Para obtener un token:
 
 ```bash
-# Generar token JWT
-irb
-require 'jwt'
-payload = { user_id: 1, email: 'admin@factumarket.com' }
-secret = 'factumarket_secret_key_2025'
-token = JWT.encode(payload, secret, 'HS256')
-puts token
+# Generar token JWT usando Docker
+docker exec factumarket-customer-service rails runner "require 'jwt'; puts JWT.encode({user_id: 1, email: 'admin@factumarket.com', exp: (Time.now + 86400).to_i}, 'factumarket_secret_key_2025', 'HS256')"
+
+# O usando Ruby directamente (si tienes jwt gem instalado)
+ruby -e "require 'jwt'; puts JWT.encode({user_id: 1, email: 'admin@factumarket.com', exp: (Time.now + 86400).to_i}, 'factumarket_secret_key_2025', 'HS256')"
 ```
 
 Incluir en todas las peticiones:
@@ -444,6 +442,53 @@ class CreateInvoice
     @invoice_repository = invoice_repository
   end
 end
+```
+
+### Configuración de Autoload (Rails 8 + Zeitwerk)
+
+Rails 8 con Zeitwerk requiere configuración especial para cargar los directorios personalizados de Clean Architecture:
+
+**`config/initializers/clean_architecture.rb`**:
+```ruby
+# Require manual de módulos Clean Architecture
+require Rails.root.join('app/domain/entities/invoice.rb')
+require Rails.root.join('app/domain/repositories/invoice_repository.rb')
+require Rails.root.join('app/application/services/customer_validator.rb')
+require Rails.root.join('app/application/use_cases/create_invoice.rb')
+# ... otros archivos
+```
+
+**`config/initializers/zeitwerk.rb`**:
+```ruby
+# Inflections para nombres de clases compuestas
+Rails.autoloaders.main.inflector.inflect(
+  "postgresql_invoice_repository" => "PostgresqlInvoiceRepository",
+  "rabbitmq_event_publisher" => "RabbitmqEventPublisher"
+)
+```
+
+### Comunicación Inter-Servicios con JWT
+
+El Invoice Service valida clientes llamando al Customer Service usando tokens JWT de servicio-a-servicio:
+
+```ruby
+# invoice-service/app/infrastructure/http/customer_http_validator.rb
+def generate_service_token
+  payload = {
+    user_id: 0,  # Service account
+    service: 'invoice_service',
+    purpose: 'customer_validation',
+    exp: (Time.now + 60).to_i
+  }
+  JWT.encode(payload, ENV['JWT_SECRET_KEY'], 'HS256')
+end
+```
+
+El Customer Service permite requests de otros servicios mediante configuración de hosts:
+
+```ruby
+# customer-service/config/environments/development.rb
+config.hosts << "customer-service"  # Permite requests del nombre DNS interno
 ```
 
 ## 🧪 Pruebas

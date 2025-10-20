@@ -36,6 +36,15 @@ module InvoiceService
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
+    # Clean Architecture: Add custom directories to autoload paths (Rails 8+)
+    config.autoload_paths << Rails.root.join("app/domain")
+    config.autoload_paths << Rails.root.join("app/application")
+    config.autoload_paths << Rails.root.join("app/infrastructure")
+
+    config.eager_load_paths << Rails.root.join("app/domain")
+    config.eager_load_paths << Rails.root.join("app/application")
+    config.eager_load_paths << Rails.root.join("app/infrastructure")
+
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
