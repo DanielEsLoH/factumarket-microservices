@@ -12,7 +12,11 @@ Antes de comenzar las pruebas, asegúrate de tener instalado:
 ### 1.1 Navegar al directorio del proyecto
 
 ```bash
-cd "/Users/daniel.eslo/Desktop/Code/FactuMarket S.A./factumarket-microservices"
+# Si acabas de clonar el repositorio:
+cd factumarket-microservices
+
+# O navega a donde lo clonaste:
+cd /ruta/a/tu/factumarket-microservices
 ```
 
 ### 1.2 Verificar que los archivos están presentes
@@ -26,6 +30,7 @@ ls -la
 # - audit-service/
 # - README.md
 # - QUICK_START.md
+# - MANUAL_TESTING_GUIDE.md (este archivo)
 ```
 
 ### 1.3 Iniciar todos los servicios

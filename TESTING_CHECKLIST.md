@@ -7,7 +7,7 @@ Use this checklist to verify that all components are working correctly.
 ### Option A: Automated Testing (Recommended - 2 minutes)
 
 ```bash
-cd "/Users/daniel.eslo/Desktop/Code/FactuMarket S.A./factumarket-microservices"
+cd factumarket-microservices
 ./run_tests.sh
 ```
 
@@ -32,7 +32,7 @@ Before testing, ensure:
 
 ```bash
 # 1. Navigate to project directory
-cd "/Users/daniel.eslo/Desktop/Code/FactuMarket S.A./factumarket-microservices"
+cd factumarket-microservices
 
 # 2. Start all services
 docker-compose up -d --build

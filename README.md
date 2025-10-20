@@ -1,6 +1,31 @@
 # FactuMarket S.A. - Sistema de Facturación Electrónica
 
-Sistema de microservicios para facturación electrónica desarrollado con Ruby on Rails, implementando Clean Architecture, patrón MVC, y arquitectura de microservicios.
+Sistema completo de facturación electrónica basado en microservicios, construido con Ruby on Rails, implementando Clean Architecture, patrón MVC y arquitectura orientada a eventos.
+
+> **Solución de Prueba Técnica** para la posición de Backend Developer en Double V Partners NYX
+
+## 🚀 Inicio Rápido
+
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd factumarket-microservices
+
+# Iniciar todos los servicios con Docker
+docker-compose up -d --build
+
+# Esperar a que los servicios estén listos (2-3 minutos)
+# Verificar que los 6 contenedores estén corriendo
+docker ps
+
+# ¡Listo! Visita los servicios:
+# - Customer Service: http://localhost:3001
+# - Invoice Service: http://localhost:3002
+# - Audit Service: http://localhost:3003
+# - RabbitMQ Management: http://localhost:15672 (guest/guest)
+```
+
+Para instrucciones detalladas de prueba, consulta [QUICK_START.md](QUICK_START.md) o [MANUAL_TESTING_GUIDE.md](MANUAL_TESTING_GUIDE.md).
 
 ## 📋 Tabla de Contenidos
 
@@ -15,6 +40,8 @@ Sistema de microservicios para facturación electrónica desarrollado con Ruby o
 - [Clean Architecture](#clean-architecture)
 - [Pruebas](#pruebas)
 - [Eventos de Auditoría](#eventos-de-auditoría)
+- [Estructura del Repositorio](#estructura-del-repositorio)
+- [Autor](#autor)
 
 ## 📖 Descripción del Proyecto
 
@@ -23,7 +50,7 @@ FactuMarket S.A. necesita modernizar su sistema de facturación electrónica. Es
 - ✅ Registro y gestión de clientes
 - ✅ Emisión de facturas electrónicas con validaciones de negocio
 - ✅ Almacenamiento transaccional en PostgreSQL
-- ✅ Registro de eventos de auditoría en MongoDB
+- ✅ Registro de eventos de auditoría en MongoDB (NoSQL)
 - ✅ Comunicación asíncrona mediante RabbitMQ
 - ✅ Autenticación con JWT
 - ✅ Trazabilidad completa de operaciones
@@ -521,9 +548,127 @@ show dbs
 - El Event Consumer corre en el mismo contenedor que Audit Service
 - JWT secret key debe cambiarse en producción
 
+## 📂 Estructura del Repositorio
+
+```
+factumarket-microservices/
+├── .git/                           # Repositorio Git
+├── .gitignore                      # Archivos ignorados por Git
+├── README.md                       # Este archivo - Documentación principal
+├── QUICK_START.md                  # Guía rápida de inicio (5 minutos)
+├── MANUAL_TESTING_GUIDE.md         # Guía completa de pruebas manuales (68 casos)
+├── TESTING_CHECKLIST.md            # Checklist interactivo de pruebas
+├── run_tests.sh                    # Script automatizado de pruebas
+├── docker-compose.yml              # Orquestación de todos los servicios
+│
+├── customer-service/               # Microservicio de Clientes
+│   ├── app/
+│   │   ├── controllers/            # Controladores MVC
+│   │   │   └── clientes_controller.rb
+│   │   ├── models/                 # Modelos MVC
+│   │   │   └── customer.rb
+│   │   └── concerns/               # JWT Authentication
+│   ├── config/
+│   │   ├── database.yml            # Configuración PostgreSQL
+│   │   └── routes.rb               # Rutas API REST
+│   ├── db/
+│   │   ├── migrate/                # Migraciones de base de datos
+│   │   └── seeds.rb                # Datos de prueba
+│   ├── lib/
+│   │   └── event_publisher.rb      # Publicador de eventos RabbitMQ
+│   ├── Gemfile                     # Dependencias Ruby
+│   └── Dockerfile                  # Imagen Docker
+│
+├── invoice-service/                # Microservicio de Facturas (Clean Architecture)
+│   ├── app/
+│   │   ├── domain/                 # 🏛️ Capa de Dominio (Clean Architecture)
+│   │   │   ├── entities/
+│   │   │   │   └── invoice.rb      # Entidad con lógica de negocio pura
+│   │   │   └── repositories/
+│   │   │       └── invoice_repository.rb  # Interfaz del repositorio
+│   │   ├── application/            # 🎯 Capa de Aplicación (Clean Architecture)
+│   │   │   ├── use_cases/
+│   │   │   │   ├── create_invoice.rb     # Caso de uso: Crear factura
+│   │   │   │   ├── get_invoice.rb        # Caso de uso: Obtener factura
+│   │   │   │   └── list_invoices.rb      # Caso de uso: Listar facturas
+│   │   │   └── services/
+│   │   │       └── customer_validator.rb  # Interfaz validador
+│   │   ├── infrastructure/         # 🔧 Capa de Infraestructura (Clean Architecture)
+│   │   │   ├── persistence/
+│   │   │   │   └── oracle_invoice_repository.rb  # Implementación repositorio
+│   │   │   ├── http/
+│   │   │   │   └── customer_http_validator.rb    # Cliente HTTP
+│   │   │   └── messaging/
+│   │   │       └── rabbitmq_event_publisher.rb   # Publisher RabbitMQ
+│   │   ├── controllers/            # 🌐 Capa de Interface (MVC)
+│   │   │   └── facturas_controller.rb
+│   │   └── models/
+│   │       └── invoice_model.rb    # ActiveRecord (solo persistencia)
+│   ├── spec/                       # 🧪 Pruebas Unitarias RSpec
+│   │   ├── domain/
+│   │   │   └── entities/
+│   │   │       └── invoice_spec.rb # Tests de entidad de dominio
+│   │   └── application/
+│   │       └── use_cases/
+│   │           └── create_invoice_spec.rb  # Tests de caso de uso
+│   ├── config/
+│   │   ├── database.yml            # Configuración PostgreSQL
+│   │   └── routes.rb               # Rutas API REST
+│   ├── db/migrate/                 # Migraciones de base de datos
+│   ├── Gemfile                     # Dependencias Ruby
+│   └── Dockerfile                  # Imagen Docker
+│
+├── audit-service/                  # Microservicio de Auditoría
+│   ├── app/
+│   │   ├── controllers/            # Controladores MVC
+│   │   │   └── auditoria_controller.rb
+│   │   └── models/                 # Modelos Mongoid (MongoDB)
+│   │       └── audit_event.rb
+│   ├── config/
+│   │   ├── mongoid.yml             # Configuración MongoDB
+│   │   ├── initializers/
+│   │   │   └── mongoid.rb          # Inicialización Mongoid
+│   │   └── routes.rb               # Rutas API REST
+│   ├── lib/
+│   │   └── event_consumer.rb       # Consumidor de eventos RabbitMQ
+│   ├── Gemfile                     # Dependencias Ruby
+│   └── Dockerfile                  # Imagen Docker
+│
+└── docs/                           # (Implícito en archivos .md)
+    ├── Arquitectura y diseño       # README.md
+    ├── Guía rápida                 # QUICK_START.md
+    ├── Pruebas manuales            # MANUAL_TESTING_GUIDE.md
+    └── Checklist de pruebas        # TESTING_CHECKLIST.md
+```
+
+### Archivos Clave
+
+| Archivo | Descripción |
+|---------|-------------|
+| `docker-compose.yml` | Orquestación completa de los 6 servicios (PostgreSQL, MongoDB, RabbitMQ, Customer, Invoice, Audit) |
+| `README.md` | Documentación técnica completa con arquitectura, APIs y configuración |
+| `QUICK_START.md` | Guía para levantar el sistema en 5 minutos con ejemplos de uso |
+| `MANUAL_TESTING_GUIDE.md` | 68 casos de prueba detallados paso a paso |
+| `TESTING_CHECKLIST.md` | Checklist interactivo para verificar todos los componentes |
+| `run_tests.sh` | Script bash para ejecutar todas las pruebas automáticamente |
+
+### Principios Arquitectónicos Aplicados
+
+- **Microservicios**: 3 servicios independientes con bases de datos separadas
+- **Clean Architecture**: Implementada en Invoice Service con 4 capas bien definidas
+- **MVC Pattern**: Controllers, Models, y Views (JSON) en todos los servicios
+- **Event-Driven**: Comunicación asíncrona mediante RabbitMQ
+- **Dependency Injection**: Inyección de dependencias en casos de uso
+- **Repository Pattern**: Abstracción de persistencia en capa de dominio
+- **SOLID Principles**: Separación de responsabilidades y inversión de dependencias
+
 ## 👥 Autor
 
-Daniel Eslo - Prueba Técnica Backend Developer - FactuMarket S.A.
+**Daniel E. Londoño**
+Backend Developer
+📧 daniel.esloh@gmail.com
+
+Prueba Técnica para Double V Partners NYX - Octubre 2025
 
 ## 📄 Licencia
 
